@@ -5,20 +5,14 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
-	"os" // مكتبة للتعامل مع النظام
+	"os"
 	"time"
 )
 
-// استدعاء التوكن من متغيرات البيئة
-func getApiURL() string {
-	token := os.Getenv("TELEGRAM_TOKEN")
-	return "https://api.telegram.org/bot" + token + "/setMessageReaction"
-}
-
 var emojis = []string{
 	"👍", "👎", "❤️", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊️", "🤡",
-	"🥱", "🥴", "😍", " whale", "❤️‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈",
-	"😴", "😭", "🤓", "👻", "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "☃️", "💅", "🤪", "🗿",
+	"🥱", "🥴", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈",
+	"😴", "😭", "🤓", "👻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "☃️", "💅", "🤪", "🗿",
 	"🆒", "💘", "🙊", "🦄", "😘", "💊", "🙉", "😎", "👾", "🤷‍♂️", "🤷", "🤷‍♀️", "😡",
 }
 
@@ -40,14 +34,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	if update.Message.MessageID != 0 {
 		rand.Seed(time.Now().UnixNano())
 		randomEmoji := emojis[rand.Intn(len(emojis))]
-		
-		addReaction(update.Message.Chat.ID, update.Message.MessageID, randomEmoji)
+		sendReaction(update.Message.Chat.ID, update.Message.MessageID, randomEmoji)
 	}
-
 	w.WriteHeader(http.StatusOK)
 }
 
-func addReaction(chatID int64, messageID int64, emoji string) {
+func sendReaction(chatID int64, messageID int64, emoji string) {
+	token := os.Getenv("TELEGRAM_TOKEN")
+	url := "https://api.telegram.org/bot" + token + "/setMessageReaction"
+	
 	payload, _ := json.Marshal(map[string]interface{}{
 		"chat_id":    chatID,
 		"message_id": messageID,
@@ -55,5 +50,5 @@ func addReaction(chatID int64, messageID int64, emoji string) {
 			{"type": "emoji", "emoji": emoji},
 		},
 	})
-	http.Post(getApiURL(), "application/json", bytes.NewBuffer(payload))
+	http.Post(url, "application/json", bytes.NewBuffer(payload))
 }
