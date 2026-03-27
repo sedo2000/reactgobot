@@ -5,17 +5,19 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
+	"os" // مكتبة للتعامل مع النظام
 	"time"
 )
 
-// توكن البوت الخاص بك
-const token = "8715150032:AAHXS2tYdHPQVJnKngzZkhst4nOviaeWGu0"
-const apiURL = "https://api.telegram.org/bot" + token + "/setMessageReaction"
+// استدعاء التوكن من متغيرات البيئة
+func getApiURL() string {
+	token := os.Getenv("TELEGRAM_TOKEN")
+	return "https://api.telegram.org/bot" + token + "/setMessageReaction"
+}
 
-// قائمة التفاعلات المأخوذة من الصورة
 var emojis = []string{
 	"👍", "👎", "❤️", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊️", "🤡",
-	"🥱", "🥴", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈",
+	"🥱", "🥴", "😍", " whale", "❤️‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈",
 	"😴", "😭", "🤓", "👻", "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "☃️", "💅", "🤪", "🗿",
 	"🆒", "💘", "🙊", "🦄", "😘", "💊", "🙉", "😎", "👾", "🤷‍♂️", "🤷", "🤷‍♀️", "😡",
 }
@@ -36,7 +38,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if update.Message.MessageID != 0 {
-		// اختيار إيموجي عشوائي
 		rand.Seed(time.Now().UnixNano())
 		randomEmoji := emojis[rand.Intn(len(emojis))]
 		
@@ -54,5 +55,5 @@ func addReaction(chatID int64, messageID int64, emoji string) {
 			{"type": "emoji", "emoji": emoji},
 		},
 	})
-	http.Post(apiURL, "application/json", bytes.NewBuffer(payload))
+	http.Post(getApiURL(), "application/json", bytes.NewBuffer(payload))
 }
